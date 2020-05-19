@@ -44,7 +44,7 @@ Firstly, you need to have
 
 * Ubuntu 18.04 
 * Python3
-* 11 GB GPU RAM
+* At least 11 GB GPU RAM
 
 Secondly, you need to install the challenge data and sample submission file by the following the instructions [here](https://zindi.africa/competitions/iclr-workshop-challenge-1-cgiar-computer-vision-for-crop-disease/data).
 
@@ -60,24 +60,23 @@ pip3 install -r requirements.txt
 * dataset.py: has the dataset class for training and test data
 * utils.py: utility functions for training, testing and reading dataset images
 * generate_library_of_models.py: generates a library of models with different architectures and augmentations through hyperparameter optimization search. It creates “trails” folder in which validation and test predictions of all trail models are stored.
-* ensemble_selection.py: applies Ensemble Selection algorithm on the generated library of models to find the best ensemble with the lowest validation error and use it to create the final submission. It outputs final_sub.csv which has the test predictions.
+* ensemble_selection.py: applies Ensemble Selection [7] algorithm on the generated library of models to find the best ensemble with the lowest validation error and use it to create the final submission. It outputs final_sub.csv which has the test predictions.
 
 ## Running
 
-### Dataset Preparation
+### 1- Prepare dataset
 
 ```
 python3 prepare_dataset.py
 ```
 
-### Generate the library of models
+### 2- Generate the library of models
 
 ```
 python3 generate_library_of_models.py
 ```
 
-
-### Create ensemble and generate submission file
+### 3- Create ensemble and generate submission file
 
 ```
 python3 ensemble_selection.py
@@ -92,7 +91,9 @@ python3 ensemble_selection.py
 
 [4] Huang, Gao, et al. "Densely connected convolutional networks." Proceedings of the IEEE conference on computer vision and pattern recognition. 2017.
 
-[5] Huang, Gao, et al. "Snapshot ensembles: Train 1, get m for free." arXiv preprint arXiv:1704.00109 (2017).
+[5] Zhang, Hongyi, et al. "mixup: Beyond empirical risk minimization." arXiv preprint arXiv:1710.09412 (2017).
 
-[6] Caruana, Rich, et al. "Ensemble selection from libraries of models." Proceedings of the twenty-first international conference on Machine learning. 2004.
+[6] Huang, Gao, et al. "Snapshot ensembles: Train 1, get m for free." arXiv preprint arXiv:1704.00109 (2017).
+
+[7] Caruana, Rich, et al. "Ensemble selection from libraries of models." Proceedings of the twenty-first international conference on Machine learning. 2004.
 
