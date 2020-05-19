@@ -10,6 +10,7 @@ import pandas as pd
 import time
 import os
 import copy
+import argparse
 from sklearn.model_selection import StratifiedKFold
 import datetime
 from PIL import Image
@@ -112,22 +113,29 @@ class ensembleSelection:
         print('avg sc: %f'%(final_sc))
         return (final_sc, sumP, sumP_test)
 
+parser = argparse.ArgumentParser(description='Data preperation')
+parser.add_argument('--train_data_path', help='path to training data folder', default='train_data', type=str)
+parser.add_argument('--data_path', help='path to training and test numpy matrices of images', default='.', type=str)
+parser.add_argument('--sample_sub_file_path', help='path to sample submission file', default='.', type=str)
+parser.add_argument('--library_size', help='number of models to be trained in the library of models', default=50, type=int)
+parser.add_argument('--library_path', help='save path for validation and test predictions of the library of models', default='trails', type=str)
+parser.add_argument('--final_sub_file_save_path', help='save path for final submission file', default='.', type=str)
+args = parser.parse_args()
+
 np.random.seed(4321)
 
-n = 50
+n = args.library_size
 
 #read training gt
-train_gts = np.load('unique_train_gts_rot_fixed.npy')
+train_gts = np.load(os.path.join(args.data_path, 'unique_train_gts_rot_fixed.npy'))
 
-#read validation probability on training data generated from automatuic hypropt trails and manual trails
+#read validation probability on training data generated from automatuic hypropt trails
 #and create a matrix of (N,D,3) where N is the number of models and D is the data size
-train_prob = np.array([np.load('trails/val_prob_trail_%d.npy'%(i)) for i in range(94,98)] + 
-                      [np.load('trails/val_prob_trail_%d.npy'%(i)) for i in range(n)])
+train_prob = np.array([np.load(os.path.join(args.library_path, 'val_prob_trail_%d.npy'%(i))) for i in range(n)])
 
-#read test probability generated from hypropt trails and manual trails
+#read test probability generated from hypropt trails
 #and create a matrix of (N,D,3) where N is the number of models and D is the data size
-test_prob = np.array([np.load('trails/test_prob_trail_%d.npy'%(i)) for i in range(94,98)] + 
-                     [np.load('trails/test_prob_trail_%d.npy'%(i)) for i in range(n)]) 
+test_prob = np.array([np.load(os.path.join(args.library_path, 'test_prob_trail_%d.npy'%(i))) for i in range(n)]) 
 
 ids = np.load('ids.npy').tolist()
 
@@ -148,10 +156,10 @@ es_test_prob[idx, 1] = 1e-6
 es_test_prob[idx, 2] = 1.0
 
 #create submission
-sub = pd.read_csv('sample_submission.csv')
+sub = pd.read_csv(os.path.join(args.sample_sub_file_path, 'sample_submission.csv'))
 sub['ID'] = ids
-lbl_names = os.listdir('train_data')
+lbl_names = os.listdir(args.train_data_path)
 for i, name in enumerate(lbl_names):
     sub[name] = es_test_prob[:,i].tolist()
-sub.to_csv('final_sub.csv', index = False)
+sub.to_csv(os.path.join(args.final_sub_file_save_path, 'final_sub.csv'), index = False)
 

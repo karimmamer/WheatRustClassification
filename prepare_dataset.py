@@ -1,8 +1,16 @@
 import numpy as np
+import os
+import argparse
 from utils import read_train_data, read_test_data
 
+parser = argparse.ArgumentParser(description='Data preperation')
+parser.add_argument('--train_data_path', help='path to training data folder', default='train_data', type=str)
+parser.add_argument('--test_data_path', help='path to test data folder', default='test_data', type=str)
+parser.add_argument('--save_path', help='save path for training and test numpy matrices of images', default='.', type=str)
+args = parser.parse_args()
+
 #read training data
-train_imgs, train_gts = read_train_data('train_data')
+train_imgs, train_gts = read_train_data(args.train_data_path)
 
 #remove dublicate training imgs
 idx_to_rmv = []
@@ -17,14 +25,14 @@ idx = [i for i in range(len(train_imgs)) if not(i in idx_to_rmv)]
 print('unique train imgs:',len(idx))
 
 #save unique training imgs
-np.save('unique_train_imgs_rot_fixed', np.array(train_imgs)[idx])
-np.save('unique_train_gts_rot_fixed', np.array(train_gts)[idx])
+np.save(os.path.join(args.save_path, 'unique_train_imgs_rot_fixed'), np.array(train_imgs)[idx])
+np.save(os.path.join(args.save_path, 'unique_train_gts_rot_fixed'), np.array(train_gts)[idx])
 
 #read test data
-test_imgs, test_gts, ids = read_test_data('test_data')
+test_imgs, test_gts, ids = read_test_data(args.test_data_path)
 
 #save test data
-np.save('test_imgs_rot_fixed', np.array(test_imgs))
-np.save('test_gts', np.array(test_gts))
-np.save('ids', np.array(ids))
+np.save(os.path.join(args.save_path, 'test_imgs_rot_fixed'), np.array(test_imgs))
+np.save(os.path.join(args.save_path, 'test_gts'), np.array(test_gts))
+np.save(os.path.join(args.save_path, 'ids'), np.array(ids))
 

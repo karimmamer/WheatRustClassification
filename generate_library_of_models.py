@@ -9,6 +9,7 @@ import pandas as pd
 #import matplotlib.pyplot as plt
 import time
 import os
+import argparse
 import copy
 from sklearn.model_selection import StratifiedKFold
 import datetime
@@ -58,8 +59,8 @@ def score(params):
         image_datasets = {'train': ICLRDataset(train_imgs, train_gts, 'train', train_index, data_transforms['train'], params['img_mix_enable']),
 	                      'val': ICLRDataset(train_imgs, train_gts, 'val', val_index, data_transforms['val'])}
 
-        dataloaders = {'train': torch.utils.data.DataLoader(image_datasets['train'], batch_size=16, shuffle=True, num_workers=16),
-                       'val': torch.utils.data.DataLoader(image_datasets['val'], batch_size=16, shuffle=False, num_workers=16)}
+        dataloaders = {'train': torch.utils.data.DataLoader(image_datasets['train'], batch_size=16, shuffle=True, num_workers=2),
+                       'val': torch.utils.data.DataLoader(image_datasets['val'], batch_size=16, shuffle=False, num_workers=2)}
 
         #create model instance
         model_ft = params['arch'](pretrained=True)
@@ -93,8 +94,8 @@ def score(params):
     val_prob.append(trail_val_prob)
 
     #save validation and test results for further processing 
-    np.save(os.path.join(save_dir, 'val_prob_trail_%d'%(idx)), trail_val_prob.detach().cpu().numpy())
-    np.save(os.path.join(save_dir, 'test_prob_trail_%d'%(idx)), trail_test_prob)
+    np.save(os.path.join(args.library_path, 'val_prob_trail_%d'%(idx)), trail_val_prob.detach().cpu().numpy())
+    np.save(os.path.join(args.library_path, 'test_prob_trail_%d'%(idx)), trail_test_prob)
     idx += 1
     
     trails_sc_arr.append(np.mean(sc_arr))
@@ -103,6 +104,12 @@ def score(params):
     del models_arr
 
     return np.mean(sc_arr)
+
+parser = argparse.ArgumentParser(description='Data preperation')
+parser.add_argument('--data_path', help='path to training and test numpy matrices of images', default='.', type=str)
+parser.add_argument('--library_size', help='number of models to be trained in the library of models', default=50, type=int)
+parser.add_argument('--library_path', help='save path for validation and test predictions of the library of models', default='trails', type=str)
+args = parser.parse_args()
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -113,19 +120,19 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 #read train data
-train_imgs = np.load('unique_train_imgs_rot_fixed.npy')
-train_gts = np.load('unique_train_gts_rot_fixed.npy')
+train_imgs = np.load(os.path.join(args.data_path, 'unique_train_imgs_rot_fixed.npy'))
+train_gts = np.load(os.path.join(args.data_path, 'unique_train_gts_rot_fixed.npy'))
 
 #read test data
-test_imgs = np.load('test_imgs_rot_fixed.npy')
-test_gts = np.load('test_gts.npy')
-ids = np.load('ids.npy').tolist()
+test_imgs = np.load(os.path.join(args.data_path, 'test_imgs_rot_fixed.npy'))
+test_gts = np.load(os.path.join(args.data_path, 'test_gts.npy'))
+ids = np.load(os.path.join(args.data_path, 'ids.npy')).tolist()
 
 test_prob = []
 val_prob = []
 trails_sc_arr = []
 
-n_trails = 50
+n_trails = args.library_size
 seed_arr = np.random.randint(low=0, high=1000000, size=n_trails)
 
 #create search space for hyperparameter optimization
@@ -148,9 +155,8 @@ space = OrderedDict([('lr', hp.choice('lr', [i*0.001 for i in range(1,4)])),
 trials = Trials()
 
 idx = 0
-save_dir = 'trails'
-if not os.path.exists(save_dir):
-    os.mkdir(save_dir)
+if not os.path.exists(args.library_path):
+    os.mkdir(args.library_path)
 
 #use tpe algorithm in hyperopt to generate a library of differnet models
 best = fmin(fn=score,
@@ -161,4 +167,4 @@ best = fmin(fn=score,
 
 print(best)
 
-np.save(os.path.join(save_dir, 'scores.npy'), np.array(trails_sc_arr))
+np.save(os.path.join(args.library_path, 'scores.npy'), np.array(trails_sc_arr))
