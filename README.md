@@ -1,6 +1,6 @@
 # Wheat Rust Classification from Ensemble Selection of CNNs
 
-Fourth place solution for CGIAR Computer Vision for Crop Disease competition organized by CV4A workshop at ICLR 2020.
+Fourth place solution for CGIAR Computer Vision for Crop Disease competition organized by CV4A workshop at ICLR 2020. The main objective of the competition is classify a given image of wheat whether it is healthy, has a stem rust or has a leaf rust.
 
 ## Summary of Approach
 
