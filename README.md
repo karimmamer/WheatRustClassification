@@ -57,21 +57,28 @@ pip3 install -r requirements.txt
 ### Project files
 
 * prepare_dataset.py: reads training and test data, removes duplicates from training data and saves them in numpy matrices. It has the following arguments:
+
     --train_data_path: path to training data folder
     --test_data_path: path to test data folder
     --save_path: save path for training and test numpy matrices of images
+
 * generate_library_of_models.py: generates a library of models with different architectures and augmentations through hyperparameter optimization search. It has the following arguments: 
+
     --data_path: path to training and test numpy matrices of images
     --library_size: number of models to be trained in the library of models
     --library_path: save path for validation and test predictions of the library of models
+
 * ensemble_selection.py: applies Ensemble Selection [7] algorithm on the generated library of models to find the best ensemble with the lowest validation error and use it to create the final submission. It has the following arguments:
+
     --train_data_path: path to training data folder
     --data_path: path to training and test numpy matrices of images
     --sample_sub_file_path: path to sample submission file
     --library_size: number of models to be trained in the library of models
     --library_path: save path for validation and test predictions of the library of models
     --final_sub_file_save_path: save path for final submission file
+
 * dataset.py: has the dataset class for training and test data.
+
 * utils.py: utility functions for training, testing and reading dataset images. 
 
 ## Running
